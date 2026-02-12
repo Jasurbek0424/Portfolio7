@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://jasurbekkhakimbekov.uz/sitemap.xml
+Sitemap: https://khakimbekov.uz/sitemap.xml
