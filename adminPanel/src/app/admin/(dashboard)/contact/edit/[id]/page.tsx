@@ -23,7 +23,7 @@ export default function EditContactPage() {
       .then((res) => {
         const d = res.data.data;
         setInitialData({
-          type: d.type,
+          type: d.type as CreateContactInput['type'],
           icon: d.icon ?? undefined,
           label: d.label ?? undefined,
           value: d.value,

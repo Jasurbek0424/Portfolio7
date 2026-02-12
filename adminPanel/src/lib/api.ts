@@ -103,7 +103,7 @@ export interface Contact {
 }
 
 export interface CreateContactInput {
-  type: string;
+  type: 'email' | 'github' | 'linkedin' | 'instagram' | 'telegram' | 'other';
   icon?: string | null;
   label?: string | null;
   value: string;
