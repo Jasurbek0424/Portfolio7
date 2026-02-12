@@ -101,7 +101,7 @@ export function ContactForm({
         <Label>Icon</Label>
         <Select
           value={form.watch('icon') ?? 'none'}
-          onValueChange={(v) => form.setValue('icon', v === 'none' ? null : v)}
+          onValueChange={(v) => form.setValue('icon', v === 'none' ? null : v as FormData['icon'])}
         >
           <SelectTrigger>
             <SelectValue placeholder="Auto (based on type)" />
