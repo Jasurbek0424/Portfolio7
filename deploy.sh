@@ -43,24 +43,27 @@ git pull origin main
 echo ""
 echo "[3/8] Building backend..."
 cd "$APP_DIR/backend"
-npm install --omit=dev
+npm install
 npx prisma generate
 npx prisma db push --skip-generate 2>/dev/null || echo "  (No schema changes)"
 npm run build
+npm prune --omit=dev
 
 # ── Step 4: Frontend ──
 echo ""
 echo "[4/8] Building frontend..."
 cd "$APP_DIR/frontend"
-npm install --omit=dev
+npm install
 npm run build
+npm prune --omit=dev
 
 # ── Step 5: Admin Panel ──
 echo ""
 echo "[5/8] Building admin panel..."
 cd "$APP_DIR/adminPanel"
-npm install --omit=dev
+npm install
 npm run build
+npm prune --omit=dev
 
 # ── Step 6: Restart services ──
 echo ""
