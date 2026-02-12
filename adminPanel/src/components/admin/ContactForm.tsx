@@ -38,7 +38,7 @@ const formSchema = z.object({
   icon: z.enum(['mail', 'github', 'linkedin', 'instagram', 'send', 'link']).optional().nullable(),
   label: z.string().max(100).optional(),
   value: z.string().min(1, 'Value is required'),
-  sortOrder: z.coerce.number().int(),
+  sortOrder: z.number().int(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -151,7 +151,7 @@ export function ContactForm({
         <Input
           id="sortOrder"
           type="number"
-          {...form.register('sortOrder')}
+          {...form.register('sortOrder', { valueAsNumber: true })}
         />
       </div>
       <Button type="submit" disabled={isLoading}>
