@@ -59,8 +59,8 @@ export function ContactForm({
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      type: 'email',
-      icon: null as string | null,
+      type: 'email' as const,
+      icon: null,
       label: '',
       value: '',
       sortOrder: 0,
