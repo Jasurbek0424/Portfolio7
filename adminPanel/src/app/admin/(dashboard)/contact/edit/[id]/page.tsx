@@ -24,7 +24,7 @@ export default function EditContactPage() {
         const d = res.data.data;
         setInitialData({
           type: d.type as CreateContactInput['type'],
-          icon: d.icon ?? undefined,
+          icon: (d.icon ?? undefined) as CreateContactInput['icon'],
           label: d.label ?? undefined,
           value: d.value,
           sortOrder: d.sortOrder,

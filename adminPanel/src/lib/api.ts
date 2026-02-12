@@ -102,9 +102,12 @@ export interface Contact {
   updatedAt?: string;
 }
 
+export type ContactType = 'email' | 'github' | 'linkedin' | 'instagram' | 'telegram' | 'other';
+export type ContactIcon = 'mail' | 'github' | 'linkedin' | 'instagram' | 'send' | 'link';
+
 export interface CreateContactInput {
-  type: 'email' | 'github' | 'linkedin' | 'instagram' | 'telegram' | 'other';
-  icon?: string | null;
+  type: ContactType;
+  icon?: ContactIcon | null;
   label?: string | null;
   value: string;
   sortOrder?: number;
