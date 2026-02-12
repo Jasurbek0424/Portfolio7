@@ -44,11 +44,19 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 interface ContactFormProps {
-  defaultValues?: Partial<CreateContactInput> & { sortOrder?: number };
+  defaultValues?: Partial<FormData>;
   onSubmit: (data: CreateContactInput) => Promise<void>;
   isLoading?: boolean;
   submitLabel?: string;
 }
+
+const DEFAULTS: FormData = {
+  type: 'email',
+  icon: null,
+  label: '',
+  value: '',
+  sortOrder: 0,
+};
 
 export function ContactForm({
   defaultValues,
@@ -58,14 +66,7 @@ export function ContactForm({
 }: ContactFormProps) {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      type: 'email' as const,
-      icon: null,
-      label: '',
-      value: '',
-      sortOrder: 0,
-      ...defaultValues,
-    },
+    defaultValues: { ...DEFAULTS, ...defaultValues },
   });
 
   async function handleSubmit(data: FormData) {
