@@ -18,7 +18,7 @@ import type { CreateSkillInput, SkillCategory } from '@/lib/api';
 const formSchema = z.object({
   skillCategoryId: z.string().min(1, 'Select a category'),
   label: z.string().trim().min(1, 'Label is required').max(100),
-  sortOrder: z.coerce.number().int(),
+  sortOrder: z.number().int(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -88,7 +88,7 @@ export function SkillForm({
       </div>
       <div className="space-y-2">
         <Label htmlFor="sortOrder">Sort Order</Label>
-        <Input id="sortOrder" type="number" {...form.register('sortOrder')} />
+        <Input id="sortOrder" type="number" {...form.register('sortOrder', { valueAsNumber: true })} />
       </div>
       <Button type="submit" disabled={isLoading}>
         {isLoading ? 'Saving...' : submitLabel}

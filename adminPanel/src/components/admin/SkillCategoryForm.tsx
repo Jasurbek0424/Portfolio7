@@ -12,7 +12,7 @@ const formSchema = z.object({
   titleEn: z.string().min(1, 'Title (EN) is required'),
   titleRu: z.string().min(1, 'Title (RU) is required'),
   titleUz: z.string().min(1, 'Title (UZ) is required'),
-  sortOrder: z.coerce.number().int(),
+  sortOrder: z.number().int(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -75,7 +75,7 @@ export function SkillCategoryForm({
       </div>
       <div className="space-y-2">
         <Label htmlFor="sortOrder">Sort Order</Label>
-        <Input id="sortOrder" type="number" {...form.register('sortOrder')} />
+        <Input id="sortOrder" type="number" {...form.register('sortOrder', { valueAsNumber: true })} />
       </div>
       <Button type="submit" disabled={isLoading}>
         {isLoading ? 'Saving...' : submitLabel}
