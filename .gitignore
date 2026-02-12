@@ -17,6 +17,7 @@ build/
 backend/uploads/
 
 # Logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -39,8 +40,13 @@ Thumbs.db
 coverage/
 .nyc_output/
 
-# Misc
+# Secrets & certificates
 *.pem
+*.key
+*.cert
+*.crt
+secrets/
+credentials/
 *.tsbuildinfo
 next-env.d.ts
 .vercel

@@ -3,17 +3,17 @@ import { z } from 'zod';
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export const createBlogSchema = z.object({
-  slug: z.string().min(1).regex(slugRegex, 'Slug must be lowercase alphanumeric with hyphens'),
-  titleEn: z.string().min(1, 'Title is required'),
-  titleRu: z.string().min(1),
-  titleUz: z.string().min(1),
-  descriptionEn: z.string().min(1),
-  descriptionRu: z.string().min(1),
-  descriptionUz: z.string().min(1),
-  contentEn: z.string().min(1),
-  contentRu: z.string().min(1),
-  contentUz: z.string().min(1),
-  thumbnail: z.string().min(1).optional().nullable(),
+  slug: z.string().min(1).max(200).regex(slugRegex, 'Slug must be lowercase alphanumeric with hyphens'),
+  titleEn: z.string().min(1, 'Title is required').max(500),
+  titleRu: z.string().min(1).max(500),
+  titleUz: z.string().min(1).max(500),
+  descriptionEn: z.string().min(1).max(2000),
+  descriptionRu: z.string().min(1).max(2000),
+  descriptionUz: z.string().min(1).max(2000),
+  contentEn: z.string().min(1).max(50000),
+  contentRu: z.string().min(1).max(50000),
+  contentUz: z.string().min(1).max(50000),
+  thumbnail: z.string().min(1).max(500).optional().nullable(),
   published: z.boolean().default(false),
 });
 

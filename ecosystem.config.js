@@ -8,6 +8,11 @@ module.exports = {
       autorestart: true,
       watch: false,
       max_memory_restart: '512M',
+      min_uptime: '10s',
+      max_restarts: 10,
+      error_file: './logs/backend-error.log',
+      out_file: './logs/backend-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       env: {
         NODE_ENV: 'production',
         PORT: 4000,
@@ -22,6 +27,11 @@ module.exports = {
       autorestart: true,
       watch: false,
       max_memory_restart: '512M',
+      min_uptime: '10s',
+      max_restarts: 10,
+      error_file: './logs/admin-error.log',
+      out_file: './logs/admin-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       env: {
         NODE_ENV: 'production',
       },

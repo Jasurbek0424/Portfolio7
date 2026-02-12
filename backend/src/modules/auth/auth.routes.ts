@@ -1,7 +1,18 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import { loginController } from './auth.controller';
 
 const router = Router();
+
+// Brute-force protection: 5 login attempts per 15 minutes per IP
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { success: false, error: 'Too many login attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: false,
+});
 
 /**
  * @swagger
@@ -43,6 +54,6 @@ const router = Router();
  *       401:
  *         description: Invalid credentials
  */
-router.post('/login', loginController);
+router.post('/login', loginLimiter, loginController);
 
 export const authRoutes = router;

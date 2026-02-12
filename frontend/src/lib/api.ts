@@ -1,8 +1,23 @@
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
+/** Validate that a URL uses a safe protocol (http/https only) */
+export function isSafeUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
+  // Allow relative URLs (start with /)
+  if (url.startsWith('/')) return true;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
 export function resolveUrl(url: string | null | undefined): string | null {
   if (!url) return null;
-  if (url.startsWith('http')) return url;
+  if (url.startsWith('http')) {
+    return isSafeUrl(url) ? url : null;
+  }
   return `${API_BASE}${url}`;
 }
 
@@ -149,6 +164,6 @@ export async function sendContactMessage(payload: SendMessagePayload): Promise<{
     return { success: json?.success === true, error: json?.error };
   } catch (e) {
     console.error('sendContactMessage failed:', e);
-    return { success: false, error: 'Tarmoq xatosi' };
+    return { success: false, error: 'Network error' };
   }
 }

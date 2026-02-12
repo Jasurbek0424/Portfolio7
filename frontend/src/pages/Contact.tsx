@@ -3,7 +3,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
 import { Send, Github, Linkedin, Mail, CheckCircle, Instagram, Link2 } from 'lucide-react';
 import { z } from 'zod';
-import { getContactInfo, sendContactMessage, type ContactItem } from '@/lib/api';
+import { getContactInfo, sendContactMessage, isSafeUrl, type ContactItem } from '@/lib/api';
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, 'Required').max(100),
@@ -48,7 +48,10 @@ const Contact = () => {
   };
   const getIconKey = (c: ContactItem) =>
     c.icon ?? (c.type === 'telegram' ? 'send' : c.type);
-  const getContactHref = (c: ContactItem) => c.type === 'email' ? `mailto:${c.value}` : c.value;
+  const getContactHref = (c: ContactItem) => {
+    if (c.type === 'email') return `mailto:${c.value}`;
+    return isSafeUrl(c.value) ? c.value : '#';
+  };
   const getContactDisplay = (c: ContactItem) => {
     if (c.label) return c.label;
     if (c.type === 'email') return c.value;

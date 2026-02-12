@@ -12,14 +12,38 @@ import { apiRoutes } from './routes';
 
 const app = express();
 
-// Security
-app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+// Security headers
 app.use(
-  cors({
-    origin: config.isDev ? true : process.env.CORS_ORIGIN?.split(',') || [],
-    credentials: true,
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    contentSecurityPolicy: config.isProd
+      ? {
+          directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", 'data:', 'https:'],
+            connectSrc: ["'self'"],
+            fontSrc: ["'self'"],
+            frameSrc: ["'none'"],
+          },
+        }
+      : false,
+    hsts: config.isProd ? { maxAge: 31536000, includeSubDomains: true, preload: true } : false,
   })
 );
+app.use(
+  cors({
+    origin: config.isDev ? true : config.CORS_ORIGIN ? config.CORS_ORIGIN.split(',') : [],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    maxAge: 600,
+  })
+);
+
+// Trust proxy (for rate limiting behind Nginx)
+app.set('trust proxy', 1);
 
 app.use(
   rateLimit({
@@ -66,7 +90,9 @@ const swaggerOptions: swaggerJsdoc.Options = {
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+if (!config.isProd) {
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+}
 
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 

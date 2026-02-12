@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Github, ExternalLink, Loader2 } from 'lucide-react';
 import { fadeUp } from '@/lib/animations';
 import { useProjects } from '@/hooks/useProjects';
-import { resolveUrl } from '@/lib/api';
+import { resolveUrl, isSafeUrl } from '@/lib/api';
 
 const filters = ['All', 'React', 'Python', 'AI'];
 
@@ -90,7 +90,7 @@ const Projects = () => {
                     </div>
                   )}
                   <div className="mt-5 flex gap-3">
-                    {project.githubUrl && (
+                    {project.githubUrl && isSafeUrl(project.githubUrl) && (
                       <a
                         href={project.githubUrl}
                         target="_blank"
@@ -100,7 +100,7 @@ const Projects = () => {
                         <Github className="h-3.5 w-3.5" /> {t('projects.github')}
                       </a>
                     )}
-                    {project.linkUrl && (
+                    {project.linkUrl && isSafeUrl(project.linkUrl) && (
                       <a
                         href={project.linkUrl}
                         target="_blank"

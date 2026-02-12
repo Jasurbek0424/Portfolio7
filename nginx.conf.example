@@ -3,7 +3,27 @@
 # Then enable:  sudo ln -s /etc/nginx/sites-available/portfolio /etc/nginx/sites-enabled/
 # Test config:  sudo nginx -t
 # Reload:       sudo systemctl reload nginx
-# SSL:          sudo certbot --nginx -d khakimbekov.uz -d admin.khakimbekov.uz
+# SSL:          sudo certbot --nginx -d khakimbekov.uz -d www.khakimbekov.uz -d admin.khakimbekov.uz
+
+# Hide Nginx version from headers
+server_tokens off;
+
+# Rate limiting zones
+limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+limit_req_zone $binary_remote_addr zone=login:10m rate=1r/s;
+limit_req_zone $binary_remote_addr zone=general:10m rate=30r/s;
+
+# Request size limit (global default)
+client_max_body_size 1M;
+
+# ──────────────────────────────────────────────
+# Redirect HTTP → HTTPS (Certbot will manage this)
+# ──────────────────────────────────────────────
+# server {
+#     listen 80;
+#     server_name khakimbekov.uz www.khakimbekov.uz admin.khakimbekov.uz;
+#     return 301 https://$host$request_uri;
+# }
 
 # ──────────────────────────────────────────────
 # Main site — khakimbekov.uz
@@ -15,19 +35,47 @@ server {
     root /var/www/portfolio/frontend/dist;
     index index.html;
 
+    # ── Security Headers ──
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https:; frame-ancestors 'self';" always;
+
     # Gzip compression
     gzip on;
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml image/svg+xml;
     gzip_min_length 256;
+    gzip_vary on;
 
     # Backend API — proxy to Express
-    location /api/ {
+    location /api/auth/login {
+        limit_req zone=login burst=3 nodelay;
         proxy_pass http://127.0.0.1:4000;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 10s;
+        proxy_send_timeout 30s;
+        proxy_read_timeout 30s;
+        client_max_body_size 1M;
+    }
+
+    location /api/ {
+        limit_req zone=api burst=20 nodelay;
+        proxy_pass http://127.0.0.1:4000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 10s;
+        proxy_send_timeout 30s;
+        proxy_read_timeout 30s;
 
         # File upload support
         client_max_body_size 15M;
@@ -38,10 +86,19 @@ server {
         alias /var/www/portfolio/backend/uploads/;
         expires 30d;
         add_header Cache-Control "public, immutable";
+        add_header X-Content-Type-Options "nosniff" always;
+
+        # Block execution of uploaded files
+        location ~* \.(php|py|sh|pl|cgi|asp|jsp)$ {
+            deny all;
+        }
     }
 
-    # Swagger docs
+    # Swagger docs — restrict to localhost/VPN in production
     location /api-docs {
+        # Uncomment below to restrict access:
+        # allow 127.0.0.1;
+        # deny all;
         proxy_pass http://127.0.0.1:4000;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
@@ -56,6 +113,7 @@ server {
 
     # SPA fallback — all other routes serve index.html
     location / {
+        limit_req zone=general burst=50 nodelay;
         try_files $uri $uri/ /index.html;
     }
 }
@@ -67,8 +125,18 @@ server {
     listen 80;
     server_name admin.khakimbekov.uz;
 
+    # ── Security Headers ──
+    add_header X-Frame-Options "DENY" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:; frame-ancestors 'none';" always;
+
     # Proxy to Next.js
     location / {
+        limit_req zone=general burst=30 nodelay;
         proxy_pass http://127.0.0.1:3001;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
@@ -77,6 +145,9 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
+        proxy_connect_timeout 10s;
+        proxy_send_timeout 30s;
+        proxy_read_timeout 30s;
 
         client_max_body_size 15M;
     }

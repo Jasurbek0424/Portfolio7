@@ -50,7 +50,9 @@ export function errorHandler(
     if (prismaErr.code === 'P2002') {
       res.status(409).json({
         success: false,
-        error: `Duplicate value for ${prismaErr.meta?.target?.join(', ') || 'unique field'}`,
+        error: config.isProd
+          ? 'Duplicate value for unique field'
+          : `Duplicate value for ${prismaErr.meta?.target?.join(', ') || 'unique field'}`,
       });
       return;
     }
@@ -63,10 +65,15 @@ export function errorHandler(
     }
   }
 
-  console.error('Unhandled error:', err);
+  // Log error but never expose internals in production
+  if (config.isProd) {
+    console.error('Unhandled error:', err.name, err.message);
+  } else {
+    console.error('Unhandled error:', err);
+  }
 
   res.status(500).json({
     success: false,
-    error: config.isProd ? 'Internal server error' : err.message,
+    error: 'Internal server error',
   });
 }
