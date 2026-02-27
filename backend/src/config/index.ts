@@ -24,8 +24,7 @@ if (isProd && !process.env.ADMIN_PASSWORD) {
 }
 
 if (isProd && (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY)) {
-  console.error('FATAL: SUPABASE_URL and SUPABASE_SERVICE_KEY must be set in production');
-  process.exit(1);
+  console.warn('WARNING: SUPABASE_URL and SUPABASE_SERVICE_KEY not set — file uploads will not work');
 }
 
 const env = {
