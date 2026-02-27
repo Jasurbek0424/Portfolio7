@@ -12,7 +12,7 @@ import {
 
 export async function getBlogsController(req: LangRequest, res: Response): Promise<void> {
   const lang = req.lang ?? 'en';
-  const isAdmin = req.originalUrl?.includes('/admin') ?? false;
+  const isAdmin = req.originalUrl?.startsWith('/api/admin') ?? false;
   const publishedOnly = !isAdmin;
   const posts = await getBlogs(lang, publishedOnly);
   res.json({ success: true, data: posts });
@@ -21,7 +21,7 @@ export async function getBlogsController(req: LangRequest, res: Response): Promi
 export async function getBlogBySlugController(req: LangRequest, res: Response): Promise<void> {
   const { slug } = req.params;
   const lang = req.lang ?? 'en';
-  const isAdmin = req.originalUrl?.includes('/admin') ?? false;
+  const isAdmin = req.originalUrl?.startsWith('/api/admin') ?? false;
   const publishedOnly = !isAdmin;
   const post = await getBlogBySlug(slug!, lang, publishedOnly);
   res.json({ success: true, data: post });

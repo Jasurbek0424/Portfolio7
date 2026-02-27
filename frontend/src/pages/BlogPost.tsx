@@ -29,7 +29,7 @@ const BlogPost = () => {
     return (
       <div className="min-h-screen pt-16">
         <div className="container mx-auto px-4 py-20 text-center">
-          <h1 className="text-2xl font-bold text-foreground">Blog post not found</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t('blog.notFound')}</h1>
           <Link
             to="/blog"
             className="mt-4 inline-flex items-center gap-2 text-sm text-primary hover:underline"
@@ -84,7 +84,7 @@ const BlogPost = () => {
 
           {/* Content — rendered with react-markdown, sanitized */}
           <div className="prose prose-sm prose-invert max-w-none text-muted-foreground leading-relaxed md:prose-base [&_h2]:text-foreground [&_h3]:text-foreground [&_strong]:text-foreground [&_a]:text-primary [&_code]:rounded [&_code]:bg-secondary [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-xs [&_pre]:rounded-xl [&_pre]:border [&_pre]:border-border [&_pre]:bg-card">
-            <ReactMarkdown>{sanitizedContent}</ReactMarkdown>
+            <ReactMarkdown skipHtml>{sanitizedContent}</ReactMarkdown>
           </div>
         </motion.div>
       </article>

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { blogsApi, type CreateBlogInput, type UpdateBlogInput } from '@/lib/api';
+import { getApiError } from '@/lib/utils';
 import { BlogForm } from '@/components/admin/BlogForm';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -40,10 +41,7 @@ export default function EditBlogPage() {
       toast.success('Blog post updated');
       router.push('/admin/blogs');
     } catch (err: unknown) {
-      const msg = err && typeof err === 'object' && 'response' in err
-        ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
-        : 'Failed to update blog';
-      toast.error(msg || 'Failed to update blog');
+      toast.error(getApiError(err, 'Failed to update blog'));
     } finally {
       setIsSubmitting(false);
     }

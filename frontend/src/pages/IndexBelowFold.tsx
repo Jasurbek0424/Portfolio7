@@ -31,18 +31,18 @@ export default function IndexBelowFold() {
 
   const now = useMemo(() => new Date(), []);
 
-  const experiences = [
+  const experiences = useMemo(() => [
     { title: t('exp.mars.title'), company: t('exp.mars.company'), date: t('exp.mars.date'), desc: t('exp.mars.desc'), start: new Date(2025, 3), end: now },
     { title: t('exp.uravo.title'), company: t('exp.uravo.company'), date: t('exp.uravo.date'), desc: t('exp.uravo.desc'), start: new Date(2024, 9), end: new Date(2025, 10) },
     { title: t('exp.aiva.title'), company: t('exp.aiva.company'), date: t('exp.aiva.date'), desc: t('exp.aiva.desc'), start: new Date(2023, 11), end: new Date(2024, 4) },
     { title: t('exp.junior.title'), company: t('exp.junior.company'), date: t('exp.junior.date'), desc: t('exp.junior.desc'), start: new Date(2022, 4), end: new Date(2023, 11) },
     { title: t('exp.itstep.title'), company: t('exp.itstep.company'), date: t('exp.itstep.date'), desc: t('exp.itstep.desc'), start: new Date(2022, 0), end: new Date(2022, 4) },
-  ];
+  ], [t, now]);
 
-  const education = [
+  const education = useMemo(() => [
     { degree: t('edu.masters.degree'), school: t('edu.masters.school'), location: t('edu.masters.location') },
     { degree: t('edu.bachelors.degree'), school: t('edu.bachelors.school'), location: t('edu.bachelors.location') },
-  ];
+  ], [t]);
 
   return (
     <>
@@ -116,7 +116,7 @@ export default function IndexBelowFold() {
           <div className="relative ml-4 border-l border-border pl-8">
             {experiences.map((exp, i) => (
               <motion.div
-                key={i}
+                key={exp.company}
                 variants={fadeUp}
                 custom={i}
                 initial="hidden"
@@ -154,7 +154,7 @@ export default function IndexBelowFold() {
           <div className="grid gap-6 md:grid-cols-2">
             {education.map((edu, i) => (
               <motion.div
-                key={i}
+                key={edu.school}
                 variants={fadeUp}
                 custom={i}
                 initial="hidden"

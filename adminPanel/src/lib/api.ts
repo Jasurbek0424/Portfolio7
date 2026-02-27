@@ -1,4 +1,5 @@
 import axios, { type AxiosError } from 'axios';
+import { TOKEN_KEY, USER_KEY } from '@/lib/utils';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -22,8 +23,8 @@ api.interceptors.response.use(
   (err: AxiosError<{ error?: string }>) => {
     if (err.response?.status === 401) {
       if (typeof window !== 'undefined') {
-        window.localStorage.removeItem('admin_token');
-        window.localStorage.removeItem('admin_user');
+        window.localStorage.removeItem(TOKEN_KEY);
+        window.localStorage.removeItem(USER_KEY);
         setAuthToken(null);
         window.location.href = '/admin/login';
       }

@@ -21,7 +21,7 @@ const Blog = () => {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : posts.length === 0 ? (
-          <p className="py-12 text-center text-muted-foreground">No blog posts yet.</p>
+          <p className="py-12 text-center text-muted-foreground">{t('blog.empty')}</p>
         ) : (
           <div className="grid gap-6 md:grid-cols-2">
             {posts.map((post, i) => {

@@ -8,7 +8,6 @@ import {
   FolderKanban,
   FileCode,
   Mail,
-  Settings,
   Code2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -20,7 +19,6 @@ const navItems = [
   { href: '/admin/resume', label: 'CV / Resume', icon: FileCode },
   { href: '/admin/contact', label: 'Contact', icon: Mail },
   { href: '/admin/skills', label: 'Core Skills', icon: Code2 },
-  { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 
 export function Sidebar() {
@@ -37,18 +35,16 @@ export function Sidebar() {
             pathname === item.href ||
             (item.href !== '/admin/dashboard' &&
               pathname.startsWith(item.href));
-          const isDisabled = item.href === '/admin/settings';
 
           return (
             <Link
               key={item.href}
-              href={isDisabled ? '#' : item.href}
+              href={item.href}
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                isActive && !isDisabled
+                isActive
                   ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                   : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground',
-                isDisabled && 'cursor-not-allowed opacity-60'
               )}
             >
               <item.icon className="h-5 w-5" />

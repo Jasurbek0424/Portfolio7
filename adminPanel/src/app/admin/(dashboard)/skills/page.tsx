@@ -157,7 +157,7 @@ export default function SkillsPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Skilllar</CardTitle>
+              <CardTitle>Skills</CardTitle>
               <CardDescription>Skills list for each category</CardDescription>
             </div>
             <Link href="/admin/skills/items/create">
@@ -174,7 +174,7 @@ export default function SkillsPage() {
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : skills.length === 0 ? (
-            <p className="py-8 text-center text-muted-foreground">Skill yo‘q.</p>
+            <p className="py-8 text-center text-muted-foreground">No skills yet.</p>
           ) : (
             <Table>
               <TableHeader>
@@ -228,7 +228,7 @@ export default function SkillsPage() {
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteCategoryId(null)}>
-              Bekor
+              Cancel
             </Button>
             <Button variant="destructive" onClick={handleDeleteCategory} disabled={deleting}>
               {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Delete'}
@@ -245,7 +245,7 @@ export default function SkillsPage() {
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteSkillId(null)}>
-              Bekor
+              Cancel
             </Button>
             <Button variant="destructive" onClick={handleDeleteSkill} disabled={deleting}>
               {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Delete'}

@@ -3,9 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { setAuthToken } from '@/lib/api';
-
-const TOKEN_KEY = 'admin_token';
-const USER_KEY = 'admin_user';
+import { TOKEN_KEY, USER_KEY } from '@/lib/utils';
 
 export interface AdminUser {
   id: string;

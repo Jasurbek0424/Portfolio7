@@ -15,10 +15,13 @@ const MAGIC_BYTES: Record<string, Buffer[]> = {
 
 /** Validate file content matches its claimed MIME type */
 export function validateMagicBytes(buffer: Buffer, mimetype: string): boolean {
-  // SVG is text-based, check for XML/SVG markers
+  // SVG is text-based, check for XML/SVG markers and block dangerous content
   if (mimetype === 'image/svg+xml') {
-    const head = buffer.subarray(0, 512).toString('utf8').toLowerCase();
-    return head.includes('<svg') && !head.includes('<script');
+    const content = buffer.toString('utf8').toLowerCase();
+    if (!content.includes('<svg')) return false;
+    const dangerous = ['<script', 'javascript:', 'onerror', 'onclick', 'onload', 'onmouseover', 'onfocus', 'eval(', 'xlink:href'];
+    if (dangerous.some((d) => content.includes(d))) return false;
+    return true;
   }
   const signatures = MAGIC_BYTES[mimetype];
   if (!signatures) return false;

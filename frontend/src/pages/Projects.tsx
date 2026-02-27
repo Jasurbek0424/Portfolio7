@@ -124,7 +124,7 @@ const Projects = () => {
               })}
             </div>
             {filtered.length === 0 && (
-              <p className="py-12 text-center text-muted-foreground">No projects match the filter.</p>
+              <p className="py-12 text-center text-muted-foreground">{t('projects.noMatch')}</p>
             )}
           </>
         )}

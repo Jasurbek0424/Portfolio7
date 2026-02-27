@@ -70,13 +70,19 @@ export async function getCvInfoController(_req: Request, res: Response): Promise
 
 export async function downloadCvController(_req: Request, res: Response): Promise<void> {
   const cv = await getCvFileOrThrow();
-  const fullPath = path.join(process.cwd(), cv.filePath);
+  const fullPath = path.resolve(process.cwd(), cv.filePath);
+  const uploadsDir = path.resolve(process.cwd(), 'uploads');
+  if (!fullPath.startsWith(uploadsDir)) {
+    res.status(400).json({ success: false, error: 'Invalid file path' });
+    return;
+  }
   if (!fs.existsSync(fullPath)) {
     res.status(404).json({ success: false, error: 'CV file not found' });
     return;
   }
+  const sanitizedName = cv.fileName.replace(/["\n\r]/g, '');
   res.setHeader('Content-Type', cv.mimeType);
-  res.setHeader('Content-Disposition', `attachment; filename="${cv.fileName}"`);
+  res.setHeader('Content-Disposition', `attachment; filename="${sanitizedName}"`);
   res.sendFile(fullPath);
 }
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
 import { Send, CheckCircle } from 'lucide-react';
@@ -21,7 +21,12 @@ const Contact = () => {
   const [sent, setSent] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const sentTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const { data: contacts = [], isLoading: contactsLoading, isError: contactsError, refetch } = useContacts();
+
+  useEffect(() => {
+    return () => { clearTimeout(sentTimerRef.current); };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +46,7 @@ const Contact = () => {
     setSending(false);
     if (success) {
       setSent(true);
-      setTimeout(() => setSent(false), 3000);
+      sentTimerRef.current = setTimeout(() => setSent(false), 3000);
       setForm({ name: '', email: '', message: '' });
     } else {
       setSendError(error || 'Message could not be sent');
@@ -123,7 +128,7 @@ const Contact = () => {
             <h3 className="mb-6 font-mono text-sm font-semibold text-primary">{t('contact.info')}</h3>
             <div className="space-y-5">
               {contactsLoading && (
-                <p className="text-sm text-muted-foreground">Loading...</p>
+                <p className="text-sm text-muted-foreground">{t('contact.loading')}</p>
               )}
               {!contactsLoading && contacts.length > 0 && contacts.map((c) => (
                 <a
@@ -150,7 +155,7 @@ const Contact = () => {
                 </div>
               )}
               {!contactsLoading && !contactsError && contacts.length === 0 && (
-                <p className="text-sm text-muted-foreground">No contact info configured yet.</p>
+                <p className="text-sm text-muted-foreground">{t('contact.noInfo')}</p>
               )}
             </div>
           </motion.div>

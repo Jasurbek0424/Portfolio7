@@ -20,16 +20,18 @@ router.post(
 
     // Validate file content (magic bytes) after upload
     const filePath = path.join(req.file.destination, req.file.filename);
+    const safeUnlink = (fp: string) => {
+      try { fs.unlinkSync(fp); } catch (e) { console.error('Failed to delete file:', fp, e); }
+    };
     try {
       const buffer = fs.readFileSync(filePath);
       if (!validateMagicBytes(buffer, req.file.mimetype)) {
-        // Delete the invalid file
-        fs.unlinkSync(filePath);
+        safeUnlink(filePath);
         res.status(400).json({ success: false, error: 'File content does not match its type' });
         return;
       }
     } catch {
-      fs.unlinkSync(filePath);
+      safeUnlink(filePath);
       res.status(400).json({ success: false, error: 'Failed to validate file' });
       return;
     }

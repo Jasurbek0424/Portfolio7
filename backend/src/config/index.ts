@@ -18,6 +18,11 @@ if (isProd && !process.env.DATABASE_URL) {
   process.exit(1);
 }
 
+if (isProd && !process.env.ADMIN_PASSWORD) {
+  console.error('FATAL: ADMIN_PASSWORD must be set in production');
+  process.exit(1);
+}
+
 const env = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   PORT: parseInt(process.env.PORT || '4000', 10),

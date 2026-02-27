@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { projectsApi, type CreateProjectInput, type UpdateProjectInput } from '@/lib/api';
+import { getApiError } from '@/lib/utils';
 import { ProjectForm } from '@/components/admin/ProjectForm';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -40,10 +41,7 @@ export default function EditProjectPage() {
       toast.success('Project updated');
       router.push('/admin/projects');
     } catch (err: unknown) {
-      const msg = err && typeof err === 'object' && 'response' in err
-        ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
-        : 'Failed to update project';
-      toast.error(msg || 'Failed to update project');
+      toast.error(getApiError(err, 'Failed to update project'));
     } finally {
       setIsSubmitting(false);
     }

@@ -7,9 +7,17 @@ export const createContactSchema = z.object({
   type: z.enum(contactTypes),
   icon: z.enum(contactIcons).optional().nullable(),
   label: z.string().max(100).optional().nullable(),
-  value: z.string().min(1, 'Value is required'),
+  value: z.string().min(1, 'Value is required').max(500),
   sortOrder: z.number().int().default(0),
-});
+}).refine((data) => {
+  if (data.type === 'email') {
+    return z.string().email().safeParse(data.value).success;
+  }
+  if (['github', 'linkedin', 'instagram', 'telegram'].includes(data.type)) {
+    return /^https?:\/\//.test(data.value) || data.value.startsWith('@');
+  }
+  return true;
+}, { message: 'Invalid value for the selected contact type', path: ['value'] });
 
 export const updateContactSchema = z.object({
   type: z.enum(contactTypes).optional(),

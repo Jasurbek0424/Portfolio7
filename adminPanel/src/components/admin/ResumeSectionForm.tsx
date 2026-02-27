@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { resumeApi, type ResumeSection } from '@/lib/api';
+import { getApiError } from '@/lib/utils';
 import { toast } from 'sonner';
 
 const schema = z.object({
@@ -83,10 +84,7 @@ export function ResumeSectionForm({ sectionKey, section, onSuccess }: ResumeSect
       }
       onSuccess();
     } catch (err: unknown) {
-      const msg = err && typeof err === 'object' && 'response' in err
-        ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
-        : 'Failed to save';
-      toast.error(msg || 'Failed to save');
+      toast.error(getApiError(err, 'Failed to save'));
     } finally {
       setIsLoading(false);
     }

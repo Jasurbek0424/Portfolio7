@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import { blogsApi, type CreateBlogInput } from '@/lib/api';
+import { getApiError } from '@/lib/utils';
 import { BlogForm } from '@/components/admin/BlogForm';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -20,10 +21,7 @@ export default function CreateBlogPage() {
       toast.success('Blog post created');
       router.push('/admin/blogs');
     } catch (err: unknown) {
-      const msg = err && typeof err === 'object' && 'response' in err
-        ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
-        : 'Failed to create blog';
-      toast.error(msg || 'Failed to create blog');
+      toast.error(getApiError(err, 'Failed to create blog'));
     } finally {
       setIsLoading(false);
     }

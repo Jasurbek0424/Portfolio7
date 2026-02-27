@@ -99,7 +99,7 @@ export default function ContactPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Barcha contactlar</CardTitle>
+          <CardTitle>All Contacts</CardTitle>
           <CardDescription>Add, edit, or delete</CardDescription>
         </CardHeader>
         <CardContent>
@@ -175,7 +175,7 @@ export default function ContactPage() {
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteId(null)}>
-              Bekor
+              Cancel
             </Button>
             <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
               {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Delete'}

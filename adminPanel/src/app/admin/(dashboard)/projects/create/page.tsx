@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import { projectsApi, type CreateProjectInput } from '@/lib/api';
+import { getApiError } from '@/lib/utils';
 import { ProjectForm } from '@/components/admin/ProjectForm';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -20,10 +21,7 @@ export default function CreateProjectPage() {
       toast.success('Project created');
       router.push('/admin/projects');
     } catch (err: unknown) {
-      const msg = err && typeof err === 'object' && 'response' in err
-        ? (err as { response?: { data?: { error?: string } } }).response?.data?.error
-        : 'Failed to create project';
-      toast.error(msg || 'Failed to create project');
+      toast.error(getApiError(err, 'Failed to create project'));
     } finally {
       setIsLoading(false);
     }

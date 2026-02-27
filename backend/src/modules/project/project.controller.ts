@@ -12,7 +12,7 @@ import {
 
 export async function getProjectsController(req: LangRequest, res: Response): Promise<void> {
   const lang = req.lang ?? 'en';
-  const isAdmin = req.originalUrl?.includes('/admin') ?? false;
+  const isAdmin = req.originalUrl?.startsWith('/api/admin') ?? false;
   const publishedOnly = !isAdmin;
   const projects = await getProjects(lang, publishedOnly);
   res.json({ success: true, data: projects });
@@ -21,7 +21,7 @@ export async function getProjectsController(req: LangRequest, res: Response): Pr
 export async function getProjectBySlugController(req: LangRequest, res: Response): Promise<void> {
   const { slug } = req.params;
   const lang = req.lang ?? 'en';
-  const isAdmin = req.originalUrl?.includes('/admin') ?? false;
+  const isAdmin = req.originalUrl?.startsWith('/api/admin') ?? false;
   const publishedOnly = !isAdmin;
   const project = await getProjectBySlug(slug!, lang, publishedOnly);
   res.json({ success: true, data: project });
