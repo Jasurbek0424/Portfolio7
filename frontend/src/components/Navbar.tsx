@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Menu, X, Globe } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import type { Language } from '@/i18n/translations';
@@ -16,6 +16,18 @@ const Navbar = () => {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!langOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setLangOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, [langOpen]);
 
   const links = [
     { to: '/', label: t('nav.home') },
@@ -46,7 +58,7 @@ const Navbar = () => {
           ))}
 
           {/* Language Switcher */}
-          <div className="relative">
+          <div className="relative" ref={langRef}>
             <button
               onClick={() => setLangOpen(!langOpen)}
               className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,12 +10,20 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageTransition from "@/components/PageTransition";
 import { AppPreloader } from "@/components/AppPreloader";
+import { Loader2 } from "lucide-react";
 import Index from "./pages/Index";
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
-import Projects from "./pages/Projects";
-import Contact from "./pages/Contact";
-import NotFound from "./pages/NotFound";
+
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
+const Projects = lazy(() => import("./pages/Projects"));
+const Contact = lazy(() => import("./pages/Contact"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+const LazyFallback = () => (
+  <div className="flex min-h-screen items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,14 +42,16 @@ const AnimatedRoutes = () => {
   return (
     <AnimatePresence mode="wait">
       <PageTransition key={location.pathname}>
-        <Routes location={location}>
-          <Route path="/" element={<Index />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:slug" element={<BlogPost />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <Suspense fallback={<LazyFallback />}>
+          <Routes location={location}>
+            <Route path="/" element={<Index />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </PageTransition>
     </AnimatePresence>
   );

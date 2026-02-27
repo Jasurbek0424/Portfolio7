@@ -5,6 +5,7 @@ import { Calendar, ArrowRight, Loader2, ImageIcon } from 'lucide-react';
 import { fadeUp } from '@/lib/animations';
 import { useBlogs } from '@/hooks/useBlogs';
 import { resolveUrl } from '@/lib/api';
+import PageHeader from '@/components/PageHeader';
 
 const Blog = () => {
   const { t } = useLanguage();
@@ -13,15 +14,7 @@ const Blog = () => {
   return (
     <div className="min-h-screen pt-16">
       <section className="container mx-auto px-4 py-20">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-12"
-        >
-          <h1 className="text-3xl font-bold text-foreground md:text-4xl">{t('blog.title')}</h1>
-          <p className="mt-3 text-muted-foreground">{t('blog.subtitle')}</p>
-        </motion.div>
+        <PageHeader title={t('blog.title')} subtitle={t('blog.subtitle')} />
 
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
@@ -31,7 +24,9 @@ const Blog = () => {
           <p className="py-12 text-center text-muted-foreground">No blog posts yet.</p>
         ) : (
           <div className="grid gap-6 md:grid-cols-2">
-            {posts.map((post, i) => (
+            {posts.map((post, i) => {
+              const thumbUrl = resolveUrl(post.thumbnail);
+              return (
               <motion.div
                 key={post.id}
                 variants={fadeUp}
@@ -45,11 +40,12 @@ const Blog = () => {
                   className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card card-hover transition-smooth"
                 >
                   {/* Thumbnail or placeholder */}
-                  {resolveUrl(post.thumbnail) ? (
+                  {thumbUrl ? (
                     <div className="overflow-hidden">
                       <img
-                        src={resolveUrl(post.thumbnail)!}
+                        src={thumbUrl}
                         alt={post.title}
+                        loading="lazy"
                         className="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     </div>
@@ -76,7 +72,8 @@ const Blog = () => {
                   </div>
                 </Link>
               </motion.div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>

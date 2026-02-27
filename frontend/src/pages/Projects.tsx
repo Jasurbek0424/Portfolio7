@@ -1,17 +1,22 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
-import { Github, ExternalLink, Loader2 } from 'lucide-react';
+import { Github, ExternalLink, Loader2, ImageOff } from 'lucide-react';
 import { fadeUp } from '@/lib/animations';
 import { useProjects } from '@/hooks/useProjects';
 import { resolveUrl, isSafeUrl } from '@/lib/api';
-
-const filters = ['All', 'React', 'Python', 'AI'];
+import PageHeader from '@/components/PageHeader';
 
 const Projects = () => {
   const { t } = useLanguage();
   const { data: projects = [], isLoading: loading } = useProjects();
   const [activeFilter, setActiveFilter] = useState('All');
+
+  const filters = useMemo(() => {
+    const techSet = new Set<string>();
+    projects.forEach((p) => p.techStack?.forEach((tech) => techSet.add(tech)));
+    return ['All', ...Array.from(techSet).sort()];
+  }, [projects]);
 
   const filtered =
     activeFilter === 'All'
@@ -21,15 +26,7 @@ const Projects = () => {
   return (
     <div className="min-h-screen pt-16">
       <section className="container mx-auto px-4 py-20">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-12"
-        >
-          <h1 className="text-3xl font-bold text-foreground md:text-4xl">{t('projects.title')}</h1>
-          <p className="mt-3 text-muted-foreground">{t('projects.subtitle')}</p>
-        </motion.div>
+        <PageHeader title={t('projects.title')} subtitle={t('projects.subtitle')} />
 
         {/* Filters */}
         <div className="mb-8 flex flex-wrap gap-2">
@@ -55,7 +52,9 @@ const Projects = () => {
         ) : (
           <>
             <div className="grid gap-6 md:grid-cols-2">
-              {filtered.map((project, i) => (
+              {filtered.map((project, i) => {
+                const thumbUrl = resolveUrl(project.thumbnail);
+                return (
                 <motion.div
                   key={project.id}
                   variants={fadeUp}
@@ -65,12 +64,20 @@ const Projects = () => {
                   viewport={{ once: true }}
                   className="card-hover overflow-hidden rounded-xl border border-border bg-card"
                 >
-                  {resolveUrl(project.thumbnail) && (
+                  {thumbUrl ? (
                     <img
-                      src={resolveUrl(project.thumbnail)!}
+                      src={thumbUrl}
                       alt={project.title}
-                      className="h-44 w-full object-cover"
+                      loading="lazy"
+                      className="h-52 w-full object-cover object-top"
                     />
+                  ) : (
+                    <div className="flex h-52 w-full items-center justify-center bg-secondary/50 border-b border-border">
+                      <div className="flex flex-col items-center gap-2 text-muted-foreground/40">
+                        <ImageOff className="h-10 w-10" />
+                        <span className="text-xs font-medium">No Image</span>
+                      </div>
+                    </div>
                   )}
                   <div className="p-6">
                   <h3 className="text-lg font-semibold text-foreground">{project.title}</h3>
@@ -113,7 +120,8 @@ const Projects = () => {
                   </div>
                   </div>
                 </motion.div>
-              ))}
+                );
+              })}
             </div>
             {filtered.length === 0 && (
               <p className="py-12 text-center text-muted-foreground">No projects match the filter.</p>

@@ -3,13 +3,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
 import { Calendar, ArrowLeft, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import DOMPurify from 'dompurify';
 import { getBlogBySlug, resolveUrl, type BlogPostPublic } from '@/lib/api';
-
-/** Sanitize text to prevent XSS */
-function sanitize(text: string): string {
-  return DOMPurify.sanitize(text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
-}
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -45,6 +41,9 @@ const BlogPost = () => {
     );
   }
 
+  const thumbUrl = resolveUrl(post.thumbnail);
+  const sanitizedContent = DOMPurify.sanitize(post.content);
+
   return (
     <div className="min-h-screen pt-16">
       <article className="container mx-auto px-4 py-12 md:py-20">
@@ -63,11 +62,12 @@ const BlogPost = () => {
           </Link>
 
           {/* Thumbnail */}
-          {resolveUrl(post.thumbnail) && (
+          {thumbUrl && (
             <div className="mb-8 overflow-hidden rounded-xl border border-border">
               <img
-                src={resolveUrl(post.thumbnail)!}
+                src={thumbUrl}
                 alt={post.title}
+                loading="lazy"
                 className="h-64 w-full object-cover md:h-96"
               />
             </div>
@@ -82,41 +82,9 @@ const BlogPost = () => {
           {/* Title */}
           <h1 className="mb-8 text-3xl font-bold text-foreground md:text-4xl">{post.title}</h1>
 
-          {/* Content — sanitized to prevent XSS */}
+          {/* Content — rendered with react-markdown, sanitized */}
           <div className="prose prose-sm prose-invert max-w-none text-muted-foreground leading-relaxed md:prose-base [&_h2]:text-foreground [&_h3]:text-foreground [&_strong]:text-foreground [&_a]:text-primary [&_code]:rounded [&_code]:bg-secondary [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-xs [&_pre]:rounded-xl [&_pre]:border [&_pre]:border-border [&_pre]:bg-card">
-            {post.content.split('\n').map((line, i) => {
-              const clean = sanitize(line);
-              if (!clean.trim()) return <br key={i} />;
-              if (clean.startsWith('### '))
-                return (
-                  <h3 key={i} className="mb-2 mt-6 text-lg font-semibold text-foreground">
-                    {clean.slice(4)}
-                  </h3>
-                );
-              if (clean.startsWith('## '))
-                return (
-                  <h2 key={i} className="mb-3 mt-8 text-xl font-bold text-foreground">
-                    {clean.slice(3)}
-                  </h2>
-                );
-              if (clean.startsWith('# '))
-                return (
-                  <h2 key={i} className="mb-3 mt-8 text-2xl font-bold text-foreground">
-                    {clean.slice(2)}
-                  </h2>
-                );
-              if (clean.startsWith('- '))
-                return (
-                  <li key={i} className="ml-4 list-disc">
-                    {clean.slice(2)}
-                  </li>
-                );
-              return (
-                <p key={i} className="mb-3">
-                  {clean}
-                </p>
-              );
-            })}
+            <ReactMarkdown>{sanitizedContent}</ReactMarkdown>
           </div>
         </motion.div>
       </article>

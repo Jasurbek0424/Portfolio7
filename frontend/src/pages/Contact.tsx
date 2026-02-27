@@ -1,9 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
-import { Send, Github, Linkedin, Mail, CheckCircle, Instagram, Link2 } from 'lucide-react';
+import { Send, CheckCircle } from 'lucide-react';
 import { z } from 'zod';
-import { getContactInfo, sendContactMessage, isSafeUrl, type ContactItem } from '@/lib/api';
+import { sendContactMessage } from '@/lib/api';
+import { useContacts } from '@/hooks/useContacts';
+import { contactIcons, getIconKey, getContactHref, getContactDisplay } from '@/lib/contact-utils';
+import PageHeader from '@/components/PageHeader';
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, 'Required').max(100),
@@ -18,45 +21,7 @@ const Contact = () => {
   const [sent, setSent] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
-  const [contacts, setContacts] = useState<ContactItem[]>([]);
-  const [contactsLoading, setContactsLoading] = useState(true);
-  const [contactsError, setContactsError] = useState(false);
-
-  function loadContacts() {
-    setContactsError(false);
-    setContactsLoading(true);
-    getContactInfo()
-      .then(setContacts)
-      .catch(() => setContactsError(true))
-      .finally(() => setContactsLoading(false));
-  }
-
-  useEffect(() => {
-    loadContacts();
-  }, []);
-
-  const contactIcons: Record<string, React.ReactNode> = {
-    mail: <Mail className="h-5 w-5" />,
-    email: <Mail className="h-5 w-5" />,
-    github: <Github className="h-5 w-5" />,
-    linkedin: <Linkedin className="h-5 w-5" />,
-    instagram: <Instagram className="h-5 w-5" />,
-    send: <Send className="h-5 w-5" />,
-    telegram: <Send className="h-5 w-5" />,
-    link: <Link2 className="h-5 w-5" />,
-    other: <Link2 className="h-5 w-5" />,
-  };
-  const getIconKey = (c: ContactItem) =>
-    c.icon ?? (c.type === 'telegram' ? 'send' : c.type);
-  const getContactHref = (c: ContactItem) => {
-    if (c.type === 'email') return `mailto:${c.value}`;
-    return isSafeUrl(c.value) ? c.value : '#';
-  };
-  const getContactDisplay = (c: ContactItem) => {
-    if (c.label) return c.label;
-    if (c.type === 'email') return c.value;
-    return c.value.replace(/^https?:\/\//, '').replace(/\/$/, '').replace('www.', '').replace('t.me/', '@');
-  };
+  const { data: contacts = [], isLoading: contactsLoading, isError: contactsError, refetch } = useContacts();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,10 +51,7 @@ const Contact = () => {
   return (
     <div className="min-h-screen pt-16">
       <section className="container mx-auto px-4 py-20">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }} className="mb-12">
-          <h1 className="text-3xl font-bold text-foreground md:text-4xl">{t('contact.title')}</h1>
-          <p className="mt-3 text-muted-foreground">{t('contact.subtitle')}</p>
-        </motion.div>
+        <PageHeader title={t('contact.title')} subtitle={t('contact.subtitle')} />
 
         <div className="grid gap-12 md:grid-cols-2">
           {/* Form */}
@@ -180,7 +142,7 @@ const Contact = () => {
                   <p className="text-sm text-muted-foreground">{t('common.loadError')}</p>
                   <button
                     type="button"
-                    onClick={loadContacts}
+                    onClick={() => refetch()}
                     className="w-fit rounded-lg border border-primary px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary hover:text-primary-foreground"
                   >
                     {t('common.retry')}
