@@ -1,6 +1,4 @@
 import type { Request, Response } from 'express';
-import path from 'path';
-import fs from 'fs';
 import { createResumeSectionSchema, updateResumeSectionSchema } from './resume.schema';
 import type { LangRequest } from '../../middlewares/lang';
 import {
@@ -12,6 +10,7 @@ import {
   deleteResumeSection,
 } from './resume.service';
 import { getCvFile, getCvFileOrThrow, saveCvFile } from './cv.service';
+import { uploadToStorage } from '../../utils/supabase';
 
 export async function getResumeController(req: LangRequest, res: Response): Promise<void> {
   const lang = req.lang ?? 'en';
@@ -58,11 +57,11 @@ export async function getCvInfoController(_req: Request, res: Response): Promise
     res.status(404).json({ success: false, error: 'CV file not found' });
     return;
   }
-  const baseUrl = process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 4000}`;
+  // filePath now stores the Supabase public URL
   res.json({
     success: true,
     data: {
-      url: `${baseUrl}/api/resume/cv/download`,
+      url: cv.filePath,
       fileName: cv.fileName,
     },
   });
@@ -70,20 +69,8 @@ export async function getCvInfoController(_req: Request, res: Response): Promise
 
 export async function downloadCvController(_req: Request, res: Response): Promise<void> {
   const cv = await getCvFileOrThrow();
-  const fullPath = path.resolve(process.cwd(), cv.filePath);
-  const uploadsDir = path.resolve(process.cwd(), 'uploads');
-  if (!fullPath.startsWith(uploadsDir)) {
-    res.status(400).json({ success: false, error: 'Invalid file path' });
-    return;
-  }
-  if (!fs.existsSync(fullPath)) {
-    res.status(404).json({ success: false, error: 'CV file not found' });
-    return;
-  }
-  const sanitizedName = cv.fileName.replace(/["\n\r]/g, '');
-  res.setHeader('Content-Type', cv.mimeType);
-  res.setHeader('Content-Disposition', `attachment; filename="${sanitizedName}"`);
-  res.sendFile(fullPath);
+  // Redirect to Supabase public URL
+  res.redirect(cv.filePath);
 }
 
 // ===== CV File info (admin) =====
@@ -103,7 +90,13 @@ export async function uploadCvController(req: Request, res: Response): Promise<v
     res.status(400).json({ success: false, error: 'No file uploaded' });
     return;
   }
-  const relativePath = path.relative(process.cwd(), file.path);
-  const saved = await saveCvFile(relativePath, file.originalname || 'cv.pdf', file.mimetype);
-  res.json({ success: true, data: { fileName: saved.fileName, url: '/api/resume/cv/download' } });
+
+  try {
+    const url = await uploadToStorage('files', 'cv.pdf', file.buffer, file.mimetype);
+    const saved = await saveCvFile(url, file.originalname || 'cv.pdf', file.mimetype);
+    res.json({ success: true, data: { fileName: saved.fileName, url } });
+  } catch (err) {
+    console.error('CV upload failed:', err);
+    res.status(500).json({ success: false, error: 'CV upload failed' });
+  }
 }

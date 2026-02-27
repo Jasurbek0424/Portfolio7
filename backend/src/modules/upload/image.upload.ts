@@ -1,9 +1,6 @@
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
 import crypto from 'crypto';
-
-const IMAGES_DIR = path.join(process.cwd(), 'uploads', 'images');
+import path from 'path';
 
 // Magic bytes for image validation
 const MAGIC_BYTES: Record<string, Buffer[]> = {
@@ -31,26 +28,14 @@ export function validateMagicBytes(buffer: Buffer, mimetype: string): boolean {
 // Allowed extensions (prevent double-extension attacks like .php.jpg)
 const SAFE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']);
 
-function ensureDir() {
-  if (!fs.existsSync(IMAGES_DIR)) {
-    fs.mkdirSync(IMAGES_DIR, { recursive: true });
+/** Generate a safe filename from the original */
+export function generateSafeFilename(originalname: string): string {
+  const ext = path.extname(originalname).toLowerCase() || '.jpg';
+  if (!SAFE_EXTENSIONS.has(ext)) {
+    throw new Error('Invalid file extension');
   }
-  return IMAGES_DIR;
+  return crypto.randomBytes(16).toString('hex') + ext;
 }
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, ensureDir());
-  },
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
-    if (!SAFE_EXTENSIONS.has(ext)) {
-      return cb(new Error('Invalid file extension'), '');
-    }
-    const name = crypto.randomBytes(16).toString('hex') + ext;
-    cb(null, name);
-  },
-});
 
 const fileFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
   const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
@@ -62,7 +47,7 @@ const fileFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
 };
 
 export const uploadImage = multer({
-  storage,
+  storage: multer.memoryStorage(),
   fileFilter,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
 });

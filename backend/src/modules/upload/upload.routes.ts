@@ -1,9 +1,8 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
-import fs from 'fs';
-import path from 'path';
 import { authMiddleware } from '../../middlewares/auth';
-import { uploadImage, validateMagicBytes } from './image.upload';
+import { uploadImage, validateMagicBytes, generateSafeFilename } from './image.upload';
+import { uploadToStorage } from '../../utils/supabase';
 
 const router = Router();
 
@@ -12,32 +11,28 @@ router.use(authMiddleware);
 router.post(
   '/image',
   uploadImage.single('file'),
-  (req: Request, res: Response) => {
+  async (req: Request, res: Response) => {
     if (!req.file) {
       res.status(400).json({ success: false, error: 'No file uploaded' });
       return;
     }
 
-    // Validate file content (magic bytes) after upload
-    const filePath = path.join(req.file.destination, req.file.filename);
-    const safeUnlink = (fp: string) => {
-      try { fs.unlinkSync(fp); } catch (e) { console.error('Failed to delete file:', fp, e); }
-    };
-    try {
-      const buffer = fs.readFileSync(filePath);
-      if (!validateMagicBytes(buffer, req.file.mimetype)) {
-        safeUnlink(filePath);
-        res.status(400).json({ success: false, error: 'File content does not match its type' });
-        return;
-      }
-    } catch {
-      safeUnlink(filePath);
-      res.status(400).json({ success: false, error: 'Failed to validate file' });
+    const buffer = req.file.buffer;
+
+    // Validate file content (magic bytes)
+    if (!validateMagicBytes(buffer, req.file.mimetype)) {
+      res.status(400).json({ success: false, error: 'File content does not match its type' });
       return;
     }
 
-    const url = `/uploads/images/${req.file.filename}`;
-    res.json({ success: true, data: { url, filename: req.file.filename } });
+    try {
+      const filename = generateSafeFilename(req.file.originalname);
+      const url = await uploadToStorage('images', filename, buffer, req.file.mimetype);
+      res.json({ success: true, data: { url, filename } });
+    } catch (err) {
+      console.error('Image upload failed:', err);
+      res.status(500).json({ success: false, error: 'Image upload failed' });
+    }
   }
 );
 

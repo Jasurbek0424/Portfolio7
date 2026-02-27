@@ -23,6 +23,11 @@ if (isProd && !process.env.ADMIN_PASSWORD) {
   process.exit(1);
 }
 
+if (isProd && (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY)) {
+  console.error('FATAL: SUPABASE_URL and SUPABASE_SERVICE_KEY must be set in production');
+  process.exit(1);
+}
+
 const env = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   PORT: parseInt(process.env.PORT || '4000', 10),
@@ -34,6 +39,8 @@ const env = {
   TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || '',
   TELEGRAM_CHAT_ID: process.env.TELEGRAM_CHAT_ID || '',
   CORS_ORIGIN: process.env.CORS_ORIGIN || '',
+  SUPABASE_URL: process.env.SUPABASE_URL || '',
+  SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_KEY || '',
 } as const;
 
 export const config = {
