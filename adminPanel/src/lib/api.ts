@@ -87,7 +87,6 @@ export const resumeApi = {
     return api.post<{ success: boolean; data: { fileName: string; url: string } }>(
       '/admin/resume/cv',
       formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
     );
   },
 };
@@ -300,7 +299,6 @@ export const uploadApi = {
     return api.post<{ success: boolean; data: { url: string; filename: string } }>(
       '/admin/upload/image',
       formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } }
     );
   },
 };
