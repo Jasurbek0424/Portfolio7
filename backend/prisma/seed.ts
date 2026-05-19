@@ -82,81 +82,62 @@ async function main() {
     console.log('ℹ️ Contacts already exist');
   }
 
-  // Seed skill categories and skills (only if none exist)
-  const existingCategories = await prisma.skillCategory.count();
-  if (existingCategories === 0) {
+  // Seed skill categories and skills — sync to CV (resets to PDF source of truth)
+  await prisma.skill.deleteMany({});
+  await prisma.skillCategory.deleteMany({});
+
+  const skillData = [
+    {
+      titleEn: 'Frontend',
+      titleRu: 'Фронтенд',
+      titleUz: 'Frontend',
+      sortOrder: 0,
+      skills: ['HTML5', 'CSS3', 'JavaScript', 'TypeScript', 'React', 'Next.js', 'WebView'],
+    },
+    {
+      titleEn: 'State & Data',
+      titleRu: 'Состояние и данные',
+      titleUz: 'Holat va data',
+      sortOrder: 1,
+      skills: ['Redux Toolkit', 'MobX', 'Zustand', 'React Query', 'TanStack Query', 'Axios'],
+    },
+    {
+      titleEn: 'UI Libraries',
+      titleRu: 'UI библиотеки',
+      titleUz: 'UI kutubxonalari',
+      sortOrder: 2,
+      skills: ['MUI', 'Ant Design', 'Leaflet'],
+    },
+    {
+      titleEn: 'Backend',
+      titleRu: 'Бэкенд',
+      titleUz: 'Backend',
+      sortOrder: 3,
+      skills: ['Python', 'Django Framework', 'Node.js', 'REST API'],
+    },
+    {
+      titleEn: 'Tools & Other',
+      titleRu: 'Инструменты и прочее',
+      titleUz: 'Vositalar va boshqalar',
+      sortOrder: 4,
+      skills: ['Git', 'Jira', 'i18next', 'Lodash', 'API Testing', 'Burp Suite', 'AI Integration', 'Analytical Thinking'],
+    },
+  ];
+
+  for (const cat of skillData) {
     await prisma.skillCategory.create({
       data: {
-        titleEn: 'Frontend',
-        titleRu: 'Фронтенд',
-        titleUz: 'Frontend',
-        sortOrder: 0,
+        titleEn: cat.titleEn,
+        titleRu: cat.titleRu,
+        titleUz: cat.titleUz,
+        sortOrder: cat.sortOrder,
         skills: {
-          create: [
-            { label: 'HTML', sortOrder: 0 },
-            { label: 'CSS', sortOrder: 1 },
-            { label: 'JavaScript (ES6+)', sortOrder: 2 },
-            { label: 'React', sortOrder: 3 },
-            { label: 'Next.js', sortOrder: 4 },
-            { label: 'Redux', sortOrder: 5 },
-            { label: 'TypeScript', sortOrder: 6 },
-            { label: 'Zustand', sortOrder: 7 },
-          ],
+          create: cat.skills.map((label, i) => ({ label, sortOrder: i })),
         },
       },
     });
-    await prisma.skillCategory.create({
-      data: {
-        titleEn: 'UI Libraries',
-        titleRu: 'UI Библиотеки',
-        titleUz: 'UI kutubxonalari',
-        sortOrder: 1,
-        skills: {
-          create: [
-            { label: 'MUI', sortOrder: 0 },
-            { label: 'DaisyUI', sortOrder: 1 },
-            { label: 'Tailwind CSS', sortOrder: 2 },
-          ],
-        },
-      },
-    });
-    await prisma.skillCategory.create({
-      data: {
-        titleEn: 'Tools',
-        titleRu: 'Инструменты',
-        titleUz: 'Vositalar',
-        sortOrder: 2,
-        skills: {
-          create: [
-            { label: 'Node.js', sortOrder: 0 },
-            { label: 'Python', sortOrder: 1 },
-            { label: 'REST APIs', sortOrder: 2 },
-            { label: 'Git', sortOrder: 3 },
-            { label: 'Burp Suite', sortOrder: 4 },
-            { label: 'AI Integration', sortOrder: 5 },
-          ],
-        },
-      },
-    });
-    await prisma.skillCategory.create({
-      data: {
-        titleEn: 'Practices',
-        titleRu: 'Практики',
-        titleUz: 'Amaliyotlar',
-        sortOrder: 3,
-        skills: {
-          create: [
-            { label: 'Clean Architecture', sortOrder: 0 },
-            { label: 'Component-based Design', sortOrder: 1 },
-            { label: 'Performance Optimization', sortOrder: 2 },
-          ],
-        },
-      },
-    });
-    console.log('✅ Skill categories and skills seeded');
-  } else {
-    console.log('ℹ️ Skill categories already exist');
   }
+  console.log('✅ Skill categories and skills synced');
 }
 
 main()

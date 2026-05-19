@@ -47,6 +47,11 @@ npm install
 npx prisma generate
 npx prisma db push --skip-generate 2>/dev/null || echo "  (No schema changes)"
 npm run build
+# Sync skills from CV (idempotent — wipes skills table and reseeds)
+if [ "${SKIP_SKILLS_SYNC:-0}" != "1" ]; then
+  echo "  Syncing skills…"
+  npm run db:sync-skills || echo "  ⚠ skills sync failed (non-fatal)"
+fi
 npm prune --omit=dev
 
 # ── Step 4: Frontend ──
