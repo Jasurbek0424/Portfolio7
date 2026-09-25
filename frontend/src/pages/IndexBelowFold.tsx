@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { motion } from 'framer-motion';
-import { Briefcase, GraduationCap, Code2 } from 'lucide-react';
+import { Briefcase, GraduationCap, Code2, MapPin } from 'lucide-react';
 import { fadeUp } from '@/lib/animations';
 import { useSkills } from '@/hooks/useSkills';
 import { PixelLoader } from '@/components/PixelLoader';
@@ -25,6 +25,24 @@ function calcDuration(start: Date, end: Date, lang: Language): string {
   return `${remainMonths} ${l.mo}`;
 }
 
+/** Highlights metrics like "25%", "~15%" inside a bullet, resume-style. */
+function renderBullet(text: string) {
+  const parts = text.split(/(~?\d+%)/g);
+  return parts.map((part, idx) =>
+    /^~?\d+%$/.test(part) ? (
+      <span key={idx} className="font-semibold text-foreground">{part}</span>
+    ) : (
+      part
+    ),
+  );
+}
+
+/** "Company · City, Country" → { company, location } */
+function splitCompany(value: string) {
+  const [company, ...rest] = value.split(' · ');
+  return { company, location: rest.join(' · ') };
+}
+
 export default function IndexBelowFold() {
   const { t, language } = useLanguage();
   const { data: skillCategories = [], isLoading: skillsLoading, isError: skillsError, refetch: loadSkills } = useSkills();
@@ -32,13 +50,19 @@ export default function IndexBelowFold() {
   const now = useMemo(() => new Date(), []);
 
   const experiences = useMemo(() => [
-    { title: t('exp.uzinfocom.title'), company: t('exp.uzinfocom.company'), date: t('exp.uzinfocom.date'), desc: t('exp.uzinfocom.desc'), start: new Date(2026, 5), end: now },
-    { title: t('exp.mars.title'), company: t('exp.mars.company'), date: t('exp.mars.date'), desc: t('exp.mars.desc'), start: new Date(2025, 3), end: new Date(2026, 5) },
-    { title: t('exp.uravo.title'), company: t('exp.uravo.company'), date: t('exp.uravo.date'), desc: t('exp.uravo.desc'), start: new Date(2024, 9), end: new Date(2025, 9) },
-    { title: t('exp.aiva.title'), company: t('exp.aiva.company'), date: t('exp.aiva.date'), desc: t('exp.aiva.desc'), start: new Date(2023, 11), end: new Date(2024, 4) },
-    { title: t('exp.junior.title'), company: t('exp.junior.company'), date: t('exp.junior.date'), desc: t('exp.junior.desc'), start: new Date(2022, 4), end: new Date(2023, 11) },
-    { title: t('exp.itstep.title'), company: t('exp.itstep.company'), date: t('exp.itstep.date'), desc: t('exp.itstep.desc'), start: new Date(2022, 0), end: new Date(2022, 4) },
-  ], [t, now]);
+    { id: 'uzinfocom', start: new Date(2026, 5), end: now, current: true, stack: ['React', 'TypeScript', 'Design System', 'Accessibility', 'Performance'] },
+    { id: 'mars', current: false, start: new Date(2025, 3), end: new Date(2026, 5), stack: ['React', 'Node.js', 'E-commerce', 'Code Review', 'Mentoring'] },
+    { id: 'uravo', current: false, start: new Date(2024, 9), end: new Date(2025, 9), stack: ['React', 'TypeScript', 'REST API', 'Zoom', 'AI'] },
+    { id: 'aiva', current: false, start: new Date(2023, 11), end: new Date(2024, 4), stack: ['React', 'Django', 'TypeScript', 'Laravel'] },
+    { id: 'junior', current: false, start: new Date(2022, 4), end: new Date(2023, 11), stack: ['React', 'Python', 'Telegram Bots', 'Google Sheets'] },
+    { id: 'itstep', current: false, start: new Date(2022, 0), end: new Date(2022, 4), stack: [] as string[] },
+  ].map((e) => ({
+    ...e,
+    title: t(`exp.${e.id}.title`),
+    date: t(`exp.${e.id}.date`),
+    ...splitCompany(t(`exp.${e.id}.company`)),
+    bullets: t(`exp.${e.id}.desc`).split('\n').filter(Boolean),
+  })), [t, now]);
 
   const education = useMemo(() => [
     { degree: t('edu.masters.degree'), school: t('edu.masters.school'), location: t('edu.masters.location') },
@@ -114,30 +138,73 @@ export default function IndexBelowFold() {
           >
             <Briefcase className="h-6 w-6 text-primary" /> {t('experience.title')}
           </motion.h2>
-          <div className="relative ml-4 border-l border-border pl-8">
+          <ol className="relative space-y-6 border-l border-border pl-6 md:ml-4 md:pl-10">
             {experiences.map((exp, i) => (
-              <motion.div
-                key={exp.company}
+              <motion.li
+                key={exp.id}
                 variants={fadeUp}
                 custom={i}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true }}
-                className="relative mb-10 last:mb-0"
+                className="relative"
               >
-                <div className="absolute -left-[2.55rem] top-1 h-3 w-3 rounded-full border-2 border-primary bg-background" />
-                <p className="font-mono text-xs text-muted-foreground">
-                  {exp.date}
-                  <span className="ml-2 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                    {calcDuration(exp.start, exp.end, language)}
-                  </span>
-                </p>
-                <h3 className="mt-1 text-lg font-semibold text-foreground">{exp.title}</h3>
-                <p className="text-sm text-primary">{exp.company}</p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{exp.desc}</p>
-              </motion.div>
+                {/* Timeline dot */}
+                <span
+                  aria-hidden="true"
+                  className="absolute -left-[1.95rem] top-7 flex h-3 w-3 items-center justify-center md:-left-[2.95rem]"
+                >
+                  {exp.current && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60" />}
+                  <span className={`relative inline-flex h-3 w-3 rounded-full border-2 border-primary ${exp.current ? 'bg-primary' : 'bg-background'}`} />
+                </span>
+
+                <article className="rounded-xl border border-border bg-card p-5 card-hover md:p-6">
+                  {/* Header: role + dates, like the CV */}
+                  <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+                    <div className="min-w-0">
+                      <h3 className="text-lg font-semibold leading-snug text-foreground">{exp.title}</h3>
+                      <p className="mt-1 text-sm font-medium text-primary">{exp.company}</p>
+                      {exp.location && (
+                        <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                          {exp.location}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex shrink-0 flex-wrap items-center gap-2 sm:flex-col sm:items-end sm:gap-1.5">
+                      <span className="whitespace-nowrap font-mono text-xs text-muted-foreground">{exp.date}</span>
+                      <span className="whitespace-nowrap rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[10px] font-medium text-primary">
+                        {calcDuration(exp.start, exp.end, language)}
+                      </span>
+                    </div>
+                  </header>
+
+                  {/* Achievements */}
+                  <ul className="mt-4 space-y-2">
+                    {exp.bullets.map((b, bi) => (
+                      <li key={bi} className="relative pl-5 text-sm leading-relaxed text-muted-foreground">
+                        <span aria-hidden="true" className="absolute left-0 top-[0.6rem] h-1.5 w-1.5 rounded-full bg-primary/70" />
+                        {renderBullet(b)}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {exp.stack.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-1.5 border-t border-border pt-4">
+                      {exp.stack.map((s) => (
+                        <span
+                          key={s}
+                          className="rounded-md border border-border bg-secondary px-2 py-0.5 font-mono text-[11px] text-foreground"
+                        >
+                          {s}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </article>
+              </motion.li>
             ))}
-          </div>
+          </ol>
         </div>
       </section>
 
