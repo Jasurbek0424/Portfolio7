@@ -14,7 +14,7 @@ const lines: Line[] = [
   { prompt: false, text: '  "tools": ["Git", "Docker", "Figma"],' },
   { prompt: false, text: '  "practices": ["Clean Code", "CI/CD"] }' },
   { prompt: true, text: 'echo $EXPERIENCE' },
-  { prompt: false, text: '3+ years | 10+ commercial projects' },
+  { prompt: false, text: '5+ years | 10+ commercial projects' },
   { prompt: true, text: 'echo "Open to work 🚀"' },
   { prompt: false, text: 'Open to work 🚀' },
 ];
