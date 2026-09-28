@@ -82,7 +82,7 @@ server {
     }
 
     # Uploaded files (images, CV, etc.)
-    location /uploads/ {
+    location ^~ /uploads/ {
         alias /var/www/portfolio/backend/uploads/;
         expires 30d;
         add_header Cache-Control "public, immutable";
